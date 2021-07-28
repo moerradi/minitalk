@@ -2,10 +2,11 @@
 
 void	handle_sig(int sig, siginfo_t *info, void* ucontext)
 {
-	(void) info;
-	(void) ucontext;
 	static int c = 0;
 	static unsigned char p = 0;
+
+	(void) info;
+	(void) ucontext;
 	c++;
 	if (sig == SIGUSR2)
 		p = (p << 1) | 0b1;
@@ -14,6 +15,8 @@ void	handle_sig(int sig, siginfo_t *info, void* ucontext)
 	if (c == 8)
 	{
 		write(1, &p, 1);
+		if (kill(info->si_pid, SIGUSR1) == -1)
+			err("server ack error");
 		c = 0;
 		p = 0;
 	}

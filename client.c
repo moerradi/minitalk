@@ -1,28 +1,50 @@
 #include "header.h"
 
-int main(int argc, char **argv)
+void	send(char *str, pid_t pid)
 {
-	int	pid;
-	int	bit;
-	int	n;
-	int	i;
-	if (argc != 3)
-		err("invalid arguments");
-	pid = ft_atoi(argv[1]);
+	int sig;
+	int i;
+	int n;
+	int bit;
+
 	i = 0;
-	while (argv[2][i])
+	while (str[i])
 	{
 		n = 7;
-		while (n >= 0)
+		while (n >= 0 && (usleep(150) || 1))
 		{
-			bit = ((argv[2][i] >> n) & 0b1);
+			bit = ((str[i] >> n) & 0b1);
 			if (bit)
-				kill(pid, SIGUSR2);
+				sig = kill(pid, SIGUSR2);
 			else
-				kill(pid, SIGUSR1);
+				sig = kill(pid, SIGUSR1);
+			if (sig == -1)
+				err("invalid PID");
 			n--;
-			usleep(300);
 		}
 		i++;
 	}
+}
+
+void	received(int signum)
+{
+	static int ack = 0;
+	(void) signum;
+	if (!ack)
+	{
+		ft_putstr("message received by the server");
+		ack = 1;
+	}
+}
+
+int main(int argc, char **argv)
+{
+	int	pid;
+
+	if (argc != 3)
+		err("invalid arguments");
+	signal(SIGUSR1, received);
+	pid = ft_atoi(argv[1]);
+	send(argv[2], pid);
+	return (0);
 }
