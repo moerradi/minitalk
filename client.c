@@ -1,6 +1,6 @@
 #include "header.h"
 
-void	send(char *str, pid_t pid)
+static void	send(char *str, pid_t pid)
 {
 	int sig;
 	int i;
@@ -11,7 +11,7 @@ void	send(char *str, pid_t pid)
 	while (str[i])
 	{
 		n = 7;
-		while (n >= 0 && (usleep(150) || 1))
+		while (n >= 0)
 		{
 			bit = ((str[i] >> n) & 0b1);
 			if (bit)
@@ -21,20 +21,17 @@ void	send(char *str, pid_t pid)
 			if (sig == -1)
 				err("invalid PID");
 			n--;
+			pause();
+			// usleep(70);
 		}
 		i++;
 	}
 }
 
-void	received(int signum)
+static void	received(int signum)
 {
-	static int ack = 0;
 	(void) signum;
-	if (!ack)
-	{
-		ft_putstr("message received by the server");
-		ack = 1;
-	}
+	usleep(70);
 }
 
 int main(int argc, char **argv)
@@ -45,6 +42,9 @@ int main(int argc, char **argv)
 		err("invalid arguments");
 	signal(SIGUSR1, received);
 	pid = ft_atoi(argv[1]);
+	if (pid == -1 || pid == 0)
+		err("PID should be a no null positive number");
 	send(argv[2], pid);
+	ft_putstr("message received by server !");
 	return (0);
 }

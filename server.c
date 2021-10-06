@@ -1,25 +1,27 @@
 #include "header.h"
 
-void	handle_sig(int sig, siginfo_t *info, void* ucontext)
+static void	handle_sig(int sig, siginfo_t *info, void* ucontext)
 {
 	static int c = 0;
 	static unsigned char p = 0;
 
-	(void) info;
 	(void) ucontext;
 	c++;
 	if (sig == SIGUSR2)
 		p = (p << 1) | 0b1;
 	else if (sig == SIGUSR1)
 		p = (p << 1) | 0b0;
+	else
+		err("unknown signal");
 	if (c == 8)
 	{
 		write(1, &p, 1);
-		if (kill(info->si_pid, SIGUSR1) == -1)
-			err("server ack error");
 		c = 0;
 		p = 0;
 	}
+	usleep(70);
+	if (kill(info->si_pid, SIGUSR1) == -1)
+		err("server acknowledgment error");
 }
 
 int main(int argc, char **argv)

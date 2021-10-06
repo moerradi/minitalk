@@ -9,10 +9,10 @@ all: $(NAME)
 
 $(NAME): $(CLI) $(SERV)
 
-$(SERV):
+$(SERV): $(S_SRC)
 	gcc $(FLAGS) $(S_SRC) -o $(SERV)
 
-$(CLI):
+$(CLI): $(C_SRC)
 	gcc $(FLAGS) $(C_SRC) -o $(CLI)
 
 clean:
